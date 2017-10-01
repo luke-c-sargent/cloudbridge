@@ -23,37 +23,62 @@ conditional code for each cloud.
    :alt: Documentation Status
 
 
-.. |aws-py27| image:: https://travis-matrix-badges.herokuapp.com/repos/gvlproject/cloudbridge/branches/master/1
-.. |aws-py36| image:: https://travis-matrix-badges.herokuapp.com/repos/gvlproject/cloudbridge/branches/master/3
-.. |aws-pypy| image:: https://travis-matrix-badges.herokuapp.com/repos/gvlproject/cloudbridge/branches/master/5
-
-.. |os-py27| image:: https://travis-matrix-badges.herokuapp.com/repos/gvlproject/cloudbridge/branches/master/2
-.. |os-py36| image:: https://travis-matrix-badges.herokuapp.com/repos/gvlproject/cloudbridge/branches/master/4
-.. |os-pypy| image:: https://travis-matrix-badges.herokuapp.com/repos/gvlproject/cloudbridge/branches/master/6
-
-.. |azure-py27| image:: https://travis-matrix-badges.herokuapp.com/repos/gvlproject/cloudbridge/branches/azure_dev/2
-.. |azure-py36| image:: https://travis-matrix-badges.herokuapp.com/repos/gvlproject/cloudbridge/branches/azure_dev/5
-.. |azure-pypy| image:: https://travis-matrix-badges.herokuapp.com/repos/gvlproject/cloudbridge/branches/azure_dev/8
-
-.. |gce-py27| image:: https://travis-matrix-badges.herokuapp.com/repos/gvlproject/cloudbridge/branches/gce/3
-.. |gce-py36| image:: https://travis-matrix-badges.herokuapp.com/repos/gvlproject/cloudbridge/branches/gce/6
-.. |gce-pypy| image:: https://travis-matrix-badges.herokuapp.com/repos/gvlproject/cloudbridge/branches/gce/9
-
-
 Build Status
 ~~~~~~~~~~~~
+
+.. |logo-aws| image:: https://upload.wikimedia.org/wikipedia/commons/1/1d/AmazonWebservices_Logo.svg
+   :height: 20px
+   :alt: aws
+.. |logo-os| image:: https://www.quobyte.com/images/technologies/openstack-logo.svg
+   :height: 20px
+   :alt: openstack
+.. |logo-azure| image:: https://upload.wikimedia.org/wikipedia/commons/a/a8/Microsoft_Azure_Logo.svg
+   :width: 130px
+   :alt: openstack
+.. |logo-gce| image:: https://cloud.google.com/_static/97fb761314/images/cloud/gcp-logo.svg
+   :width: 130px
+   :alt: gce
+
+.. |aws-py27| image:: https://travis-matrix-badges.herokuapp.com/repos/gvlproject/cloudbridge/branches/master/1
+              :target: https://travis-ci.org/gvlproject/cloudbridge
+.. |aws-py36| image:: https://travis-matrix-badges.herokuapp.com/repos/gvlproject/cloudbridge/branches/master/3
+              :target: https://travis-ci.org/gvlproject/cloudbridge
+.. |aws-pypy| image:: https://travis-matrix-badges.herokuapp.com/repos/gvlproject/cloudbridge/branches/master/5
+              :target: https://travis-ci.org/gvlproject/cloudbridge
+
+.. |os-py27| image:: https://travis-matrix-badges.herokuapp.com/repos/gvlproject/cloudbridge/branches/master/2
+             :target: https://travis-ci.org/gvlproject/cloudbridge
+.. |os-py36| image:: https://travis-matrix-badges.herokuapp.com/repos/gvlproject/cloudbridge/branches/master/4
+             :target: https://travis-ci.org/gvlproject/cloudbridge
+.. |os-pypy| image:: https://travis-matrix-badges.herokuapp.com/repos/gvlproject/cloudbridge/branches/master/6
+             :target: https://travis-ci.org/gvlproject/cloudbridge
+
+.. |azure-py27| image:: https://travis-matrix-badges.herokuapp.com/repos/gvlproject/cloudbridge/branches/azure_dev/2
+                :target: https://travis-ci.org/gvlproject/cloudbridge/branches
+.. |azure-py36| image:: https://travis-matrix-badges.herokuapp.com/repos/gvlproject/cloudbridge/branches/azure_dev/5
+                :target: https://travis-ci.org/gvlproject/cloudbridge/branches
+.. |azure-pypy| image:: https://travis-matrix-badges.herokuapp.com/repos/gvlproject/cloudbridge/branches/azure_dev/8
+                :target: https://travis-ci.org/gvlproject/cloudbridge/branches
+
+.. |gce-py27| image:: https://travis-matrix-badges.herokuapp.com/repos/gvlproject/cloudbridge/branches/gce/3
+              :target: https://travis-ci.org/gvlproject/cloudbridge/branches
+.. |gce-py36| image:: https://travis-matrix-badges.herokuapp.com/repos/gvlproject/cloudbridge/branches/gce/6
+              :target: https://travis-ci.org/gvlproject/cloudbridge/branches
+.. |gce-pypy| image:: https://travis-matrix-badges.herokuapp.com/repos/gvlproject/cloudbridge/branches/gce/9
+              :target: https://travis-ci.org/gvlproject/cloudbridge/branches
 
 +--------------------------+--------------+--------------+--------------+
 | **Provider/Environment** | py27         | py36         | pypy         |
 +--------------------------+--------------+--------------+--------------+
-| **aws**                  | |aws-py27|   | |aws-py36|   | |aws-pypy|   |
+| |logo-aws|               | |aws-py27|   | |aws-py36|   | |aws-pypy|   |
 +--------------------------+--------------+--------------+--------------+
-| **openstack**            | |os-py27|    | |os-py36|    | |os-pypy|    |
+| |logo-os|                | |os-py27|    | |os-py36|    | |os-pypy|    |
 +--------------------------+--------------+--------------+--------------+
-| **azure (alpha)**        | |azure-py27| | |azure-py36| | |azure-py36| |
+| |logo-azure|             | |azure-py27| | |azure-py36| | |azure-py36| |
 +--------------------------+--------------+--------------+--------------+
-| **gce (alpha)**          | |gce-py27|   | |gce-py36|   | |gce-pypy|   |
+| |logo-gce|               | |gce-py27|   | |gce-py36|   | |gce-pypy|   |
 +--------------------------+--------------+--------------+--------------+
+
 
 Installation
 ~~~~~~~~~~~~
