@@ -58,3 +58,6 @@ target/
 
 *.DS_Store
 /venv/
+
+# cyverse test harness
+cytest.sh
