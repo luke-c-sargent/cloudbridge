@@ -7,6 +7,6 @@ from .provider import CyverseCloudProvider
 def config_whitelist(config):
     result = {}
     for key in config:
-        if key in CyverseCloudProvider.env_vars:
+        if key in CyverseCloudProvider.API_VARS:
             result[key] = config[key]
     return result

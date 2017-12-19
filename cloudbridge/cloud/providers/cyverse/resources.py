@@ -3,24 +3,28 @@ DataTypes used by this provider
 """
 from agavepy.agave import Agave
 
+from cloudbridge.cloud.providers.cyverse import CyverseCloudProvider
 from cloudbridge.cloud.base.resources import BaseBucket
 from cloudbridge.cloud.base.resources import BaseBucketContainer
 from cloudbridge.cloud.base.resources import BaseBucketObject
 from cloudbridge.cloud.base.resources import ClientPagedResultList
 from cloudbridge.cloud.interfaces.exceptions import CloudBridgeError
+
+
 class CyverseClient(object):
     """
     Cyverse client definition
     """
     PARAMETERS = ["clientName", "callback_url", "description"]
-    CREDENTIALS = ["api_key", "api_secret"]
 
     DEFAULT_NAME = "CloudBridge"
     DEFAULT_DESCRIPTION = "Cyverse access via AgaveAPI"
-    DEFAULT_CALLBACKURL = "https://google.com"
+    DEFAULT_CALLBACKURL = ""
 
     # arguments are strings
-    def __init__(self, name=DEFAULT_NAME, callback_url="",
+    def __init__(self,
+                 name=DEFAULT_NAME,
+                 callback_url=DEFAULT_CALLBACKURL,
                  description=DEFAULT_DESCRIPTION):
         self.clientName = name if name is not None else self.DEFAULT_NAME
         self.description = description
@@ -28,7 +32,8 @@ class CyverseClient(object):
 
     def __eq__(self, other):
         return reduce(
-            (lambda x, y: x and y), [self.x == other.x for x in self.PARAMETERS])
+            (lambda x, y: x and y),
+            [self.x == other.x for x in self.PARAMETERS])
 
     def keys(self):
         return [x for x in self.PARAMETERS if hasattr(self, x)]
@@ -36,10 +41,13 @@ class CyverseClient(object):
 
 class CyverseConnection(object):
     # these client parameters have defaults
-    CLIENT_PARAMS = CyverseClient.PARAMETERS
     # the presence of these determines client checking / creating
-    CLIENT_CREDS = CyverseClient.CREDENTIALS
     # key: the AgavePy name     value: the API name
+    API_VARS = [
+        'username', 'password',
+        'api_key', 'api_secret',
+        'token', 'refresh_token'
+    ]
     SYNONYMS = {
         "user": "username",
         "pass": "password",
@@ -49,15 +57,16 @@ class CyverseConnection(object):
 
     # initialize the Agave API and client objects
     def __init__(self, provider):
-        self._api = Agave(
-#FIX THIS~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-            **provider._get_config_value()
-        )
-        self._client = CyverseClient(
-#FIX THIS~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-            **{key: config[key] for key in self.CLIENT_PARAMS
-                if key in config and config[key] is not None}
-        )
+        # Create configuration from inputted config
+        def config_keys(self, config):
+            result = {}
+            for key in config:
+                if key is not None:
+                    result[key] = self._get_config_value(key)
+            return result
+
+        self._api = Agave(**config_keys(CyverseCloudProvider.API_VARS))
+        self._client = CyverseClient(**config_keys(CyverseClient.PARAMETERS))
 
     # check if provided client app is in user's client app list
     def check_clients(self):
@@ -73,7 +82,7 @@ class CyverseConnection(object):
             if overwrite:
                 self.delete_client()
             else:
-                raise CloudBrideError(
+                raise CloudBridgeError(
                     "Client already exists and overwrite set to False")
         if type(client) is not str:
             client = client.clientName
@@ -135,7 +144,7 @@ class CyverseBucketContainer(BaseBucketContainer):
 #            # pylint:disable=protected-access
 #            obj = self.bucket._bucket.Object(name)
 
-    def list(self, limit=None):
+    def list(self, limit=None, marker=None):
         results = self._file_handle.list(**self.details)
         objects = [CyverseBucketObject(self._provider, _obj)
                    for _obj in results]
@@ -189,10 +198,6 @@ class CyverseBucketObject(BaseBucketObject):
     @property
     def id(self):
         return self.path
-
-    def __init__(self, info):
-        super(CyverseBucketObject)
-        self._info = info
 
     @property
     def format(self):

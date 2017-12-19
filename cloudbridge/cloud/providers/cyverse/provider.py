@@ -19,8 +19,8 @@ class CyverseCloudProvider(BaseCloudProvider):
     CYVERSE_SYSTEM_ID = CYVERSE_DEFAULT_HOST
 
     # API login keys
-    default_keys = ['host', 'zone', 'port', 'api_server']
-    env_vars = [
+    #default_keys = ['host', 'zone', 'port', 'api_server']
+    API_VARS = [
         'username', 'password',
         'api_key', 'api_secret',
         'token', 'refresh_token'
