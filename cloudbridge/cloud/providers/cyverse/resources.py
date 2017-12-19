@@ -156,7 +156,7 @@ class CyverseBucketContainer(BaseBucketContainer):
 
 
 class CyverseBucketObject(BaseBucketObject):
-    PARAMS = ["format", "_links", "system", "lastModified", "permissions",
+    FILE_INFO = ["format", "_links", "system", "lastModified", "permissions",
               "path", "name", "mimeType", "type", "length"]
 
     class BucketObjIterator():
@@ -240,9 +240,13 @@ class CyverseBucketObject(BaseBucketObject):
         return self._info["length"]
 
     def upload(self, data):
-        with open(filename, "rb") as f:
-            imp_conf["fileToUpload"] = f
-            handle = conn._api.files.importData(**imp_conf)
+        pass
 
     def upload_from_file(self, path):
-        pass
+        handle = None
+        with open(filename, "rb") as f:
+            imp_conf["fileToUpload"] = f
+            handle = conn._api.files.importData(
+                **self.FILE_CONF,
+                fileToUpload = f)
+        return handle

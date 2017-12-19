@@ -20,11 +20,7 @@ class CyverseCloudProvider(BaseCloudProvider):
 
     # API login keys
     #default_keys = ['host', 'zone', 'port', 'api_server']
-    API_VARS = [
-        'username', 'password',
-        'api_key', 'api_secret',
-        'token', 'refresh_token'
-    ]
+
 
     # takes config, a dict of configuration values
     def __init__(self, config):
