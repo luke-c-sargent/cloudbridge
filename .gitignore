@@ -61,3 +61,5 @@ target/
 
 # cyverse test harness
 cytest.sh
+# test file
+test.py

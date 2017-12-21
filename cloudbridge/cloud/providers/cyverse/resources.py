@@ -3,19 +3,18 @@ DataTypes used by this provider
 """
 from agavepy.agave import Agave
 
-from cloudbridge.cloud.providers.cyverse import CyverseCloudProvider
 from cloudbridge.cloud.base.resources import BaseBucket
 from cloudbridge.cloud.base.resources import BaseBucketContainer
 from cloudbridge.cloud.base.resources import BaseBucketObject
 from cloudbridge.cloud.base.resources import ClientPagedResultList
-from cloudbridge.cloud.interfaces.exceptions import CloudBridgeError
+from cloudbridge.cloud.interfaces.exceptions import InvalidConfigurationException
 
 
 class CyverseClient(object):
     """
     Cyverse client definition
     """
-    PARAMETERS = ["clientName", "callback_url", "description"]
+    PARAMETERS = ["client_name", "callback_url", "description"]
 
     DEFAULT_NAME = "CloudBridge"
     DEFAULT_DESCRIPTION = "Cyverse access via AgaveAPI"
@@ -23,12 +22,16 @@ class CyverseClient(object):
 
     # arguments are strings
     def __init__(self,
-                 name=DEFAULT_NAME,
+                 clientName=DEFAULT_NAME,
                  callback_url=DEFAULT_CALLBACKURL,
                  description=DEFAULT_DESCRIPTION):
-        self.clientName = name if name is not None else self.DEFAULT_NAME
+        self.clientName = clientName
         self.description = description
         self.callback_url = callback_url
+
+    @property
+    def client_name(self):
+        return self.clientName
 
     def __eq__(self, other):
         return reduce(
@@ -44,13 +47,13 @@ class CyverseConnection(object):
     # the presence of these determines client checking / creating
     # key: the AgavePy name     value: the API name
     API_VARS = [
-        'username', 'password',
-        'api_key', 'api_secret',
-        'token', 'refresh_token'
+        'api_server', 'username', 'password', 'api_key',
+        'api_secret', 'token', 'refresh_token', 'client_name'
     ]
     SYNONYMS = {
         "user": "username",
         "pass": "password",
+        "client_name": "clientName",
         "consumerSecret": "api_secret",
         "consumerKey": "api_key"
     }
@@ -58,15 +61,20 @@ class CyverseConnection(object):
     # initialize the Agave API and client objects
     def __init__(self, provider):
         # Create configuration from inputted config
-        def config_keys(self, config):
+        def config_keys(config, synonyms=None):
             result = {}
             for key in config:
                 if key is not None:
-                    result[key] = self._get_config_value(key)
+                    if synonyms is not None and key in synonyms:
+                        result[synonyms[key]] = provider._get_config_value(key)
+                    else:
+                        result[key] = provider._get_config_value(key)
             return result
 
-        self._api = Agave(**config_keys(CyverseCloudProvider.API_VARS))
-        self._client = CyverseClient(**config_keys(CyverseClient.PARAMETERS))
+        print("The api is getting:\n{}".format(config_keys(CyverseConnection.API_VARS)))
+        self._api = Agave(**config_keys(CyverseConnection.API_VARS))
+        self._client = CyverseClient(**config_keys(CyverseClient.PARAMETERS,
+                                                   CyverseConnection.SYNONYMS))
 
     # check if provided client app is in user's client app list
     def check_clients(self):
@@ -82,7 +90,7 @@ class CyverseConnection(object):
             if overwrite:
                 self.delete_client()
             else:
-                raise CloudBridgeError(
+                raise InvalidConfigurationException(
                     "Client already exists and overwrite set to False")
         if type(client) is not str:
             client = client.clientName
@@ -112,7 +120,7 @@ class CyverseConnection(object):
 class CyverseBucket(BaseBucket):
     def __init__(self, provider):
         super(CyverseBucket, self).__init__(provider)
-        self._bucket = provider.username
+        self._bucket = provider._get_config_value("username")
         self._object_container = CyverseBucketContainer(provider, self)
 
     @property
@@ -132,7 +140,7 @@ class CyverseBucketContainer(BaseBucketContainer):
     def __init__(self, provider, bucket):
         self._file_handle = provider._conn._api.files
         super(CyverseBucketContainer, self).__init__(provider, bucket)
-        self.details = {"filePath": provider.username,
+        self.details = {"filePath": provider._get_config_value("username"),
                         "systemId": self._provider.CYVERSE_SYSTEM_ID}
 
     def _get_files(self):
@@ -156,8 +164,8 @@ class CyverseBucketContainer(BaseBucketContainer):
 
 
 class CyverseBucketObject(BaseBucketObject):
-    PARAMS = ["format", "_links", "system", "lastModified", "permissions",
-              "path", "name", "mimeType", "type", "length"]
+    FILE_INFO = ["format", "_links", "system", "lastModified", "permissions",
+                 "path", "name", "mimeType", "type", "length"]
 
     class BucketObjIterator():
         CHUNK_SIZE = 4096
@@ -186,13 +194,20 @@ class CyverseBucketObject(BaseBucketObject):
     def __init__(self, provider, obj):
         super(CyverseBucketObject, self).__init__(provider)
         self.FILE_CONF["systemId"] = CyverseCloudProvider.CYVERSE_SYSTEM_ID
-        self.FILE_CONF["filePath"] = self._provider.username
+        self.FILE_CONF["filePath"] = "/{}/".format(self._provider.username)
         self._object = obj
 
     def iter_content(self):
         data = self._provider._conn.files.download(
             filePath=self.path, systemId=self.system).content
         return self.BucketObjIterator(data)
+
+    def delete(self):
+        print(self._provider._conn.files.delete(
+            filePath=self.path, systemId=self.system))
+
+    def upload(self, data):
+        pass
 
     # path is unique; two files can't exist in the same place
     @property
@@ -240,9 +255,10 @@ class CyverseBucketObject(BaseBucketObject):
         return self._info["length"]
 
     def upload(self, data):
-        with open(filename, "rb") as f:
-            imp_conf["fileToUpload"] = f
-            handle = conn._api.files.importData(**imp_conf)
+        info = None 
 
     def upload_from_file(self, path):
-        pass
+        info = None
+        with open(path, "rb") as f:
+            info = conn._api.files.importData(fileToUpload=f, **self.FILE_CONF)
+        return info

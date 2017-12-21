@@ -15,20 +15,12 @@ class CyverseCloudProvider(BaseCloudProvider):
     CYVERSE_DEFAULT_ZONE = 'iplant'
     CYVERSE_DEFAULT_PORT = '1247'
     CYVERSE_DEFAULT_API_SERVER = 'agave.iplantc.org'
-
     CYVERSE_SYSTEM_ID = CYVERSE_DEFAULT_HOST
-
-    # API login keys
-    #default_keys = ['host', 'zone', 'port', 'api_server']
-    API_VARS = [
-        'username', 'password',
-        'api_key', 'api_secret',
-        'token', 'refresh_token'
-    ]
 
     # takes config, a dict of configuration values
     def __init__(self, config):
-        super(CyverseCloudProvider, self).__init__(config_whitelist(config))
+        super(CyverseCloudProvider, self).__init__(
+            config_whitelist(config, CyverseConnection.API_VARS))
         # initialize services
         self._conn = CyverseConnection(self)
         self._storage = CyverseStorageService(self)
@@ -39,10 +31,10 @@ class CyverseCloudProvider(BaseCloudProvider):
         if not result:
             result = environ.get(
                 'CYVERSE_ENV_{0}'.format(key.upper()), None)
-        if not result and hasattr(
+            if not result and hasattr(
                 self, "CYVERSE_DEFAULT_{0}".format(key.upper())):
-            result = getattr(self, "CYVERSE_DEFAULT_{0}".format(key.upper()))
-        return None
+                result = getattr(self, "CYVERSE_DEFAULT_{0}".format(key.upper()))
+        return result
 
     @property
     def compute(self):

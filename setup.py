@@ -42,7 +42,10 @@ REQS_OPENSTACK = [
     'python-neutronclient>=6.0.0',
     'python-keystoneclient>=3.13.0'
 ]
-REQS_FULL = REQS_BASE + REQS_AWS + REQS_AZURE + REQS_OPENSTACK
+REQS_CYVERSE = [
+    'agavepy==0.6.1'
+]
+REQS_FULL = REQS_BASE + REQS_AWS + REQS_AZURE + REQS_OPENSTACK + REQS_CYVERSE
 # httpretty is required with/for moto 1.0.0 or AWS tests fail
 REQS_DEV = ([
     'tox>=2.1.1',
