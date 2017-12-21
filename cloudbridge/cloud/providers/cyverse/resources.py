@@ -165,7 +165,11 @@ class CyverseBucketContainer(BaseBucketContainer):
 
 class CyverseBucketObject(BaseBucketObject):
     FILE_INFO = ["format", "_links", "system", "lastModified", "permissions",
+<<<<<<< HEAD
                  "path", "name", "mimeType", "type", "length"]
+=======
+              "path", "name", "mimeType", "type", "length"]
+>>>>>>> dd6bd95e781a0f824fb420a820eaf6881139dafa
 
     class BucketObjIterator():
         CHUNK_SIZE = 4096
@@ -255,6 +259,7 @@ class CyverseBucketObject(BaseBucketObject):
         return self._info["length"]
 
     def upload(self, data):
+<<<<<<< HEAD
         info = None 
 
     def upload_from_file(self, path):
@@ -262,3 +267,15 @@ class CyverseBucketObject(BaseBucketObject):
         with open(path, "rb") as f:
             info = conn._api.files.importData(fileToUpload=f, **self.FILE_CONF)
         return info
+=======
+        pass
+
+    def upload_from_file(self, path):
+        handle = None
+        with open(filename, "rb") as f:
+            imp_conf["fileToUpload"] = f
+            handle = conn._api.files.importData(
+                **self.FILE_CONF,
+                fileToUpload = f)
+        return handle
+>>>>>>> dd6bd95e781a0f824fb420a820eaf6881139dafa
