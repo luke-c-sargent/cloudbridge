@@ -165,11 +165,7 @@ class CyverseBucketContainer(BaseBucketContainer):
 
 class CyverseBucketObject(BaseBucketObject):
     FILE_INFO = ["format", "_links", "system", "lastModified", "permissions",
-<<<<<<< HEAD
                  "path", "name", "mimeType", "type", "length"]
-=======
-              "path", "name", "mimeType", "type", "length"]
->>>>>>> dd6bd95e781a0f824fb420a820eaf6881139dafa
 
     class BucketObjIterator():
         CHUNK_SIZE = 4096
@@ -260,7 +256,7 @@ class CyverseBucketObject(BaseBucketObject):
 
     def upload(self, data):
 <<<<<<< HEAD
-        info = None 
+        info = None
 
     def upload_from_file(self, path):
         info = None
