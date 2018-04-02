@@ -26,6 +26,8 @@ from cloudbridge.cloud.base.services import BaseSubnetService
 from cloudbridge.cloud.base.services import BaseVMFirewallService
 from cloudbridge.cloud.base.services import BaseVMTypeService
 from cloudbridge.cloud.base.services import BaseVolumeService
+from cloudbridge.cloud.interfaces.exceptions \
+    import DuplicateResourceException
 from cloudbridge.cloud.interfaces.resources import KeyPair
 from cloudbridge.cloud.interfaces.resources import MachineImage
 from cloudbridge.cloud.interfaces.resources import PlacementZone
@@ -166,29 +168,23 @@ class OpenStackKeyPairService(BaseKeyPairService):
         return ClientPagedResultList(self.provider, results)
 
     def create(self, name, public_key_material=None):
-        """
-        Create a new key pair or raise an exception if one already exists.
-
-        :type name: str
-        :param name: The name of the key pair to be created.
-
-        :rtype: ``object`` of :class:`.KeyPair`
-        :return:  A key pair instance or ``None`` if one was not be created.
-        """
         log.debug("Creating a new key pair with the name: %s", name)
         OpenStackKeyPair.assert_valid_resource_name(name)
+
+        existing_kp = self.find(name=name)
+        if existing_kp:
+            raise DuplicateResourceException(
+                'Keypair already exists with name {0}'.format(name))
 
         private_key = None
         if not public_key_material:
             public_key_material, private_key = cb_helpers.generate_key_pair()
+
         kp = self.provider.nova.keypairs.create(name,
                                                 public_key=public_key_material)
-
-        if kp:
-            return OpenStackKeyPair(self.provider, kp)
-            kp.material = private_key
-        log.debug("Key Pair with the name %s already exists", name)
-        return None
+        cb_kp = OpenStackKeyPair(self.provider, kp)
+        cb_kp.material = private_key
+        return cb_kp
 
 
 class OpenStackVMFirewallService(BaseVMFirewallService):
@@ -538,7 +534,7 @@ class OpenStackRegionService(BaseRegionService):
 
     def get(self, region_id):
         log.debug("Getting OpenStack Region with the id: %s", region_id)
-        region = (r for r in self.list() if r.id == region_id)
+        region = (r for r in self if r.id == region_id)
         return next(region, None)
 
     def list(self, limit=None, marker=None):
@@ -852,7 +848,7 @@ class OpenStackSubnetService(BaseSubnetService):
         if network:
             network_id = (network.id if isinstance(network, OpenStackNetwork)
                           else network)
-            subnets = [subnet for subnet in self.list() if network_id ==
+            subnets = [subnet for subnet in self if network_id ==
                        subnet.network_id]
         else:
             subnets = [OpenStackSubnet(self.provider, subnet) for subnet in
@@ -892,11 +888,8 @@ class OpenStackSubnetService(BaseSubnetService):
             router = self.provider.networking.routers.create(
                 network=net, name=OpenStackRouter.CB_DEFAULT_ROUTER_NAME)
             router.attach_subnet(sn)
-            gteway = (self.provider.networking.gateways
-                      .get_or_create_inet_gateway(
-                          net,
-                          OpenStackInternetGateway.CB_DEFAULT_INET_GATEWAY_NAME
-                          ))
+            gteway = net.gateways.get_or_create_inet_gateway(
+                        OpenStackInternetGateway.CB_DEFAULT_INET_GATEWAY_NAME)
             router.attach_gateway(gteway)
             return sn
         except NeutronClientException:
@@ -908,7 +901,7 @@ class OpenStackSubnetService(BaseSubnetService):
                      else subnet)
         self.provider.neutron.delete_subnet(subnet_id)
         # Adhere to the interface docs
-        if subnet_id not in self.list():
+        if subnet_id not in self:
             return True
         return False
 

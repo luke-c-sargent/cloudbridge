@@ -211,7 +211,7 @@ class OpenStackVMType(BaseVMType):
 
     @property
     def ram(self):
-        return self._os_flavor.ram
+        return int(self._os_flavor.ram) / 1024
 
     @property
     def size_root_disk(self):
@@ -398,19 +398,31 @@ class OpenStackInstance(BaseInstance):
         return OpenStackMachineImage(
             self._provider, self._provider.compute.images.get(image_id))
 
+    def _get_fip(self, floating_ip):
+        """Get a floating IP object based on the supplied ID."""
+        return OpenStackFloatingIP(
+            self._provider,
+            self._provider.os_conn.network.get_ip(floating_ip))
+
     def add_floating_ip(self, floating_ip):
         """
         Add a floating IP address to this instance.
         """
         log.debug("Adding floating IP adress: %s", floating_ip)
-        self._os_instance.add_floating_ip(floating_ip.public_ip)
+        fip = (floating_ip if isinstance(floating_ip, OpenStackFloatingIP)
+               else self._get_fip(floating_ip))
+        self._provider.os_conn.compute.add_floating_ip_to_server(
+            self.id, fip.public_ip)
 
     def remove_floating_ip(self, floating_ip):
         """
         Remove a floating IP address from this instance.
         """
         log.debug("Removing floating IP adress: %s", floating_ip)
-        self._os_instance.remove_floating_ip(floating_ip.public_ip)
+        fip = (floating_ip if isinstance(floating_ip, OpenStackFloatingIP)
+               else self._get_fip(floating_ip))
+        self._provider.os_conn.compute.remove_floating_ip_from_server(
+            self.id, fip.public_ip)
 
     def add_vm_firewall(self, firewall):
         """
@@ -718,14 +730,32 @@ class OpenStackGatewayContainer(BaseGatewayContainer):
     def __init__(self, provider, network):
         super(OpenStackGatewayContainer, self).__init__(provider, network)
 
+    def _check_fip_connectivity(self, external_net):
+        # Due to current limitations in OpenStack:
+        # https://bugs.launchpad.net/neutron/+bug/1743480, it's not
+        # possible to differentiate between floating ip networks and provider
+        # external networks. Therefore, we systematically step through
+        # all available networks and perform an assignment test to infer valid
+        # floating ip nets.
+        dummy_router = self._provider.networking.routers.create(
+            network=self._network, name='cb_conn_test_router')
+        with cb_helpers.cleanup_action(lambda: dummy_router.delete()):
+            try:
+                dummy_router.attach_gateway(external_net)
+                return True
+            except Exception:
+                return False
+
     def get_or_create_inet_gateway(self, name=None):
         """For OS, inet gtw is any net that has `external` property set."""
         if name:
             OpenStackInternetGateway.assert_valid_resource_name(name)
 
-        for n in self._provider.networking.networks:
-            if n.external:
-                return OpenStackInternetGateway(self._provider, n)
+        external_nets = (n for n in self._provider.networking.networks
+                         if n.external)
+        for net in external_nets:
+            if self._check_fip_connectivity(net):
+                return OpenStackInternetGateway(self._provider, net)
         return None
 
     def delete(self, gateway):
@@ -735,7 +765,8 @@ class OpenStackGatewayContainer(BaseGatewayContainer):
     def list(self, limit=None, marker=None):
         log.debug("OpenStack listing of all current internet gateways")
         igl = [OpenStackInternetGateway(self._provider, n)
-               for n in self._provider.networking.networks if n.external]
+               for n in self._provider.networking.networks
+               if n.external and self._check_fip_connectivity(n)]
         return ClientPagedResultList(self._provider, igl, limit=limit,
                                      marker=marker)
 
@@ -946,8 +977,7 @@ class OpenStackFloatingIP(BaseFloatingIP):
     def refresh(self):
         net = self._provider.networking.networks.get(
             self._ip.floating_network_id)
-        gw = self._provider.networking.gateways.get_or_create_inet_gateway(
-            net)
+        gw = net.gateways.get_or_create_inet_gateway()
         fip = gw.floating_ips.get(self.id)
         # pylint:disable=protected-access
         self._ip = fip._ip

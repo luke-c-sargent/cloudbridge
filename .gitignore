@@ -63,3 +63,7 @@ target/
 cytest.sh
 # test file
 test.py
+bootstrap.py
+ISB-*
+launch.json
+settings.json

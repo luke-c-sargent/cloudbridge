@@ -583,11 +583,12 @@ class Instance(ObjectLifeCycleMixin, CloudResource):
         """
         Add a public IP address to this instance.
 
-        :type floating_ip: :class:``.FloatingIP``
+        :type floating_ip: :class:``.FloatingIP`` or floating IP ID
         :param floating_ip: The FloatingIP object to associate with the
                             instance. Note that is not the actual public IP
                             address but the CloudBridge object encapsulating
-                            the IP.
+                            the IP or the respective provider ID that
+                            identifies the address.
         """
         pass
 
@@ -596,11 +597,12 @@ class Instance(ObjectLifeCycleMixin, CloudResource):
         """
         Remove a public IP address from this instance.
 
-        :type floating_ip: :class:``.FloatingIP``
+        :type floating_ip: :class:``.FloatingIP`` or floating IP ID
         :param floating_ip: The FloatingIP object to remove from the
                             instance. Note that is not the actual public IP
                             address but the CloudBridge object encapsulating
-                            the IP.
+                            the IP or the respective provider ID that
+                            identifies the address.
         """
         pass
 
@@ -1766,10 +1768,10 @@ class VMType(CloudResource):
     @abstractproperty
     def ram(self):
         """
-        The amount of RAM (in MB) supported by this VM type.
+        The amount of RAM (in GB) supported by this VM type.
 
-        :rtype: ``int``
-        :return: Total RAM (in MB).
+        :rtype: ``float``
+        :return: Total RAM (in GB).
         """
         pass
 
