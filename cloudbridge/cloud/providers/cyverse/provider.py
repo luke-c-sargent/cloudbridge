@@ -19,6 +19,7 @@ class CyverseCloudProvider(BaseCloudProvider):
 
     # takes config, a dict of configuration values
     def __init__(self, config):
+        #print("Input config:\n{}\n".format(config))
         super(CyverseCloudProvider, self).__init__(
             config_whitelist(config, CyverseConnection.API_VARS))
         # initialize services

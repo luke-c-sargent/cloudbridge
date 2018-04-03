@@ -47,7 +47,7 @@ class CyverseConnection(object):
     # the presence of these determines client checking / creating
     # key: the AgavePy name     value: the API name
     API_VARS = [
-        'api_server', 'username', 'password', 'api_key',
+        'api_server', 'user', 'pass', 'api_key',
         'api_secret', 'token', 'refresh_token', 'client_name'
     ]
     SYNONYMS = {
@@ -61,18 +61,23 @@ class CyverseConnection(object):
     # initialize the Agave API and client objects
     def __init__(self, provider):
         # Create configuration from inputted config
-        def config_keys(config, synonyms=None):
+        def config_keys(config, synonyms=self.SYNONYMS):
             result = {}
             for key in config:
                 if key is not None:
                     if synonyms is not None and key in synonyms:
-                        result[synonyms[key]] = provider._get_config_value(key)
+                        gotten_value = provider._get_config_value(key)
+                        #print("GV: {}".format(gotten_value))
+                        if gotten_value is not None:
+                            result[synonyms[key]] = gotten_value
                     else:
-                        result[key] = provider._get_config_value(key)
+                        gotten_value = provider._get_config_value(key)
+                        if gotten_value is not None:
+                            result[key] = gotten_value
             return result
-
-        print("The api is getting:\n{}".format(config_keys(CyverseConnection.API_VARS)))
-        self._api = Agave(**config_keys(CyverseConnection.API_VARS))
+        keys = config_keys(CyverseConnection.API_VARS)
+        #print("The api is getting:\n{}".format(keys))
+        self._api = Agave(**keys)
         self._client = CyverseClient(**config_keys(CyverseClient.PARAMETERS,
                                                    CyverseConnection.SYNONYMS))
 
@@ -133,15 +138,16 @@ class CyverseBucket(BaseBucket):
 
     @property
     def objects(self):
-        return self._object_container
+        return self._object_container.list().data
 
 
 class CyverseBucketContainer(BaseBucketContainer):
     def __init__(self, provider, bucket):
         self._file_handle = provider._conn._api.files
         super(CyverseBucketContainer, self).__init__(provider, bucket)
-        self.details = {"filePath": provider._get_config_value("username"),
+        self.details = {"filePath": provider._get_config_value("user"),
                         "systemId": self._provider.CYVERSE_SYSTEM_ID}
+        file_list = self.list()
 
     def _get_files(self):
         pass
@@ -193,18 +199,18 @@ class CyverseBucketObject(BaseBucketObject):
 
     def __init__(self, provider, obj):
         super(CyverseBucketObject, self).__init__(provider)
-        self.FILE_CONF["systemId"] = CyverseCloudProvider.CYVERSE_SYSTEM_ID
-        self.FILE_CONF["filePath"] = "/{}/".format(self._provider.username)
-        self._object = obj
+        self.systemId = provider.CYVERSE_SYSTEM_ID
+        self.filePath = "/{}/".format(provider._get_config_value("user"))
+        self._info = obj
 
     def iter_content(self):
         data = self._provider._conn.files.download(
-            filePath=self.path, systemId=self.system).content
+            filePath=self.filePath, systemId=self.systemId).content
         return self.BucketObjIterator(data)
 
     def delete(self):
         print(self._provider._conn.files.delete(
-            filePath=self.path, systemId=self.system))
+            filePath=self.filePath, systemId=self.systemId))
 
     def upload(self, data):
         pass
