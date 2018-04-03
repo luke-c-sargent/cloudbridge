@@ -19,7 +19,7 @@ class CyverseCloudProvider(BaseCloudProvider):
 
     # takes config, a dict of configuration values
     def __init__(self, config):
-        #print("Input config:\n{}\n".format(config))
+        # print("Input config:\n{}\n".format(config))
         super(CyverseCloudProvider, self).__init__(
             config_whitelist(config, CyverseConnection.API_VARS))
         # initialize services
@@ -33,8 +33,9 @@ class CyverseCloudProvider(BaseCloudProvider):
             result = environ.get(
                 'CYVERSE_ENV_{0}'.format(key.upper()), None)
             if not result and hasattr(
-                self, "CYVERSE_DEFAULT_{0}".format(key.upper())):
-                result = getattr(self, "CYVERSE_DEFAULT_{0}".format(key.upper()))
+                        self, "CYVERSE_DEFAULT_{0}".format(key.upper())):
+                result = getattr(self,
+                                 "CYVERSE_DEFAULT_{0}".format(key.upper()))
         return result
 
     @property

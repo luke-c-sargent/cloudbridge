@@ -7,7 +7,8 @@ from cloudbridge.cloud.base.resources import BaseBucket
 from cloudbridge.cloud.base.resources import BaseBucketContainer
 from cloudbridge.cloud.base.resources import BaseBucketObject
 from cloudbridge.cloud.base.resources import ClientPagedResultList
-from cloudbridge.cloud.interfaces.exceptions import InvalidConfigurationException
+from cloudbridge.cloud.interfaces.exceptions \
+    import InvalidConfigurationException
 
 
 class CyverseClient(object):
@@ -67,7 +68,7 @@ class CyverseConnection(object):
                 if key is not None:
                     if synonyms is not None and key in synonyms:
                         gotten_value = provider._get_config_value(key)
-                        #print("GV: {}".format(gotten_value))
+                        # print("GV: {}".format(gotten_value))
                         if gotten_value is not None:
                             result[synonyms[key]] = gotten_value
                     else:
@@ -76,7 +77,7 @@ class CyverseConnection(object):
                             result[key] = gotten_value
             return result
         keys = config_keys(CyverseConnection.API_VARS)
-        #print("The api is getting:\n{}".format(keys))
+        # print("The api is getting:\n{}".format(keys))
         self._api = Agave(**keys)
         self._client = CyverseClient(**config_keys(CyverseClient.PARAMETERS,
                                                    CyverseConnection.SYNONYMS))
@@ -147,7 +148,6 @@ class CyverseBucketContainer(BaseBucketContainer):
         super(CyverseBucketContainer, self).__init__(provider, bucket)
         self.details = {"filePath": provider._get_config_value("user"),
                         "systemId": self._provider.CYVERSE_SYSTEM_ID}
-        file_list = self.list()
 
     def _get_files(self):
         pass
@@ -260,11 +260,9 @@ class CyverseBucketObject(BaseBucketObject):
     def size(self):
         return self._info["length"]
 
-    def upload(self, data):
-        info = None
-
     def upload_from_file(self, path):
         info = None
         with open(path, "rb") as f:
-            info = conn._api.files.importData(fileToUpload=f, **self.FILE_CONF)
+            info = self._provider._conn.files.importData(fileToUpload=f,
+                                                         **self.FILE_CONF)
         return info
