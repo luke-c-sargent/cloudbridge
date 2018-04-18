@@ -16,6 +16,7 @@ class ProviderList(object):
     AWS = 'aws'
     OPENSTACK = 'openstack'
     AZURE = 'azure'
+    CYVERSE = 'cyverse'
 
 
 class CloudProviderFactory(object):

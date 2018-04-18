@@ -12,6 +12,7 @@ class CyverseStorageService(BaseStorageService):
     def __init__(self, provider):
         super(CyverseStorageService, self).__init__(provider)
         self._bucket_svc = CyverseBucketService(provider)
+        self._buckets = []
 
     @property
     def buckets(self):
