@@ -15,9 +15,9 @@ class CyverseCloudProvider(BaseCloudProvider):
     CYVERSE_DEFAULT_HOST = 'data.iplantcollaborative.org'
     CYVERSE_DEFAULT_ZONE = 'iplant'
     CYVERSE_DEFAULT_PORT = '1247'
-    CYVERSE_DEFAULT_API_SERVER = 'https://agave.iplantc.org' #'agave.iplantc.org'
+    CYVERSE_DEFAULT_API_SERVER = 'https://agave.iplantc.org'
     CYVERSE_DEFAULT_CLIENTNAME = CyverseClient.DEFAULT_NAME
-    CYVERSE_DEFAULT_FILE_PATH = "/" # this is the home directory of a user's store
+    CYVERSE_DEFAULT_FILEPATH = "/"  # the home directory of a user's store
     CYVERSE_SYSTEM_ID = CYVERSE_DEFAULT_HOST
 
     # takes config, a dict of configuration values
